@@ -2,7 +2,7 @@ var request = require("request");
 var cheerio = require("cheerio");
 var URL = require("url-parse");
 var START_URL = "http://www.amazon.com";
-var SEARCH_WORD = "Books";
+var SEARCH_WORD = "books";
 var MAX_PAGES_TO_VISIT = 10;
 var pagesVisited = {};
 var numPagesVisited = 0;
@@ -14,7 +14,6 @@ crawl();
 function crawl() {
   if (numPagesVisited >= MAX_PAGES_TO_VISIT) {
     console.log("Reached max limit of number of pages to visit.");
-    return;
   }
   var nextPage = pagesToVisit.pop();
   if (nextPage in pagesVisited) {
@@ -25,6 +24,7 @@ function crawl() {
     visitPage(nextPage, crawl);
   }
 }
+
 function visitPage(url, callback) {
   // Add page to our set
   pagesVisited[url] = true;
@@ -42,9 +42,13 @@ function visitPage(url, callback) {
     var $ = cheerio.load(body);
     var isWordFound = searchForWord($, SEARCH_WORD);
     if (isWordFound) {
+      //   targetCrawl();
+      //   request(url + "/" + SEARCH_WORD, function(error, response, body) {
+      visitPage(START_URL + "/" + SEARCH_WORD.toLowerCase());
       console.log("Word " + SEARCH_WORD + " found at page " + url);
-      collectInternalLinks($);
-      console.log(pagesVisited);
+      console.log("Page title: " + $("title").text());
+      // collectInternalLinks($);
+      // return "one run only";
     } else {
       collectInternalLinks($);
       // In this short program, our callback is just calling crawl()
@@ -52,6 +56,14 @@ function visitPage(url, callback) {
     }
   });
 }
+
+// function targetCrawl(START_URL, SEARCH_WORD) {
+//   request(START_URL + "/" + SEARCH_WORD, function(error, response, body) {
+//     console.log("Word " + SEARCH_WORD + " found at page " + url);
+//     console.log("Page title: " + $("title").text());
+//   });
+// }
+
 function searchForWord($, word) {
   var bodyText = $("html > body")
     .text()
